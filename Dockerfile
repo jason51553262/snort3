@@ -15,25 +15,26 @@ RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
         bison \
         build-essential \
+        checkinstall zlib1g-dev perl libfindbin-libs-perl \
+        automake autoconf libtool pkg-config perl \
         ca-certificates \
         cmake \
-        libdumbnet-dev \
+        libz-dev libbz2-dev \
         libfl-dev \
+        openssl \
+        libssl-dev \
         libhyperscan-dev \
         libhyperscan5 \
         libluajit-5.1-dev \
         liblzma-dev \
         libpcap-dev \
-        libpcre2-dev \
         libssh-dev \
         libgoogle-perftools-dev \
         libhwloc-dev \
-        libssl-dev \
         uuid-dev \
         libsafec-dev \
         libjemalloc-dev \
         libc6-dev \
-        openssl \
         autoconf \
         libtool \
         pkg-config \
@@ -41,6 +42,7 @@ RUN apt-get update && apt-get upgrade -y && \
         tar \
         wget \
         git \
+        check \
         zlib1g-dev \
         libmnl-dev \
         libnet1-dev \
@@ -75,13 +77,43 @@ RUN git clone --depth=1 https://github.com/snort3/libml.git && \
     cd / && \
     rm -rf libml
 
+# Install libdnet
+RUN wget -q https://github.com/ofalk/libdnet/archive/refs/tags/libdnet-1.18.0.tar.gz && \
+    tar -xzf libdnet-1.18.0.tar.gz && \
+    cd libdnet-libdnet-1.18.0 && \
+    ./configure --prefix=/usr && \
+    make && \
+    make install && \
+    ldconfig && \
+    cd .. && \
+    rm -rf libdnet-1.18.0.tar.gz libdnet-libdnet-1.18.0
+
+# Install pcre
+RUN wget -q https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.45/pcre2-10.45.tar.gz && \
+    tar -xzf pcre2-10.45.tar.gz && \
+    cd pcre2-10.45 && \
+    ./configure --prefix=/usr \
+                --enable-unicode \
+                --enable-jit \
+                --enable-pcre2-16 \
+                --enable-pcre2-32 \
+                --enable-pcre2grep-libz \
+                --enable-pcre2grep-libbz2 && \
+    make -j$(nproc) && \
+    make install && \
+    ln -sf /usr/lib/pkgconfig/libpcre2-8.pc /usr/lib/pkgconfig/libpcre2.pc && \
+    cd .. && \
+    rm -rf pcre2-10.45 pcre2-10.45.tar.gz && \
+    ldconfig
+
 # Install Snort
 ENV SNORT_VERSION=3.7.3.0
 RUN wget -nv https://github.com/snort3/snort3/archive/refs/tags/${SNORT_VERSION}.tar.gz && \
     tar -xf ${SNORT_VERSION}.tar.gz && \
     cd snort3-${SNORT_VERSION} && \
     ./configure_cmake.sh --help; \
-    ./configure_cmake.sh --prefix=/usr --enable-tcmalloc --disable-docs && \
+    ./configure_cmake.sh --prefix=/usr --enable-tcmalloc --disable-docs \
+        --enable-debug-msgs && \
     cd build && \
     make -j$(nproc) && \
     make install && \
@@ -103,7 +135,7 @@ FROM debian-slim-base
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
         tcpdump libdumbnet1 libhwloc15 libhyperscan5 libluajit-5.1-2 liblzma5 \
-        libpcap0.8 libpcre2-8-0 libssh-4 libssl3 zlib1g \
+        libpcap0.8 libssh-4 zlib1g openssl libssl3 \
         libgoogle-perftools4 libnuma1 libunwind8 libuuid1 libsafec3 \
         libjemalloc2 libudev1 ca-certificates tar libunwind8 libnet1 libmnl0 && \
     apt-get clean && \

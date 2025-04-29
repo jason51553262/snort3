@@ -115,7 +115,7 @@ COPY --from=build /usr/etc/snort /etc/snort/
 COPY --from=build /usr/lib /usr/lib/
 COPY --from=build /usr/include /usr/include/
 
-COPY snort.lua /etc/snort/snort.lua
+COPY *.lua /etc/snort/
 COPY version /app/version
 COPY /docker-entrypoint.sh /
 RUN chmod +x /docker-entrypoint.sh

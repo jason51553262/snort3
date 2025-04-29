@@ -1,4 +1,18 @@
+#alert http any any -> any any (msg:"HTTP Test"; sid:1000004;)
+alert http (
+    msg:"HTTP Test";
+    http_method;
+    content:"GET",fast_pattern,nocase;
+    sid:1000004;
+)
+alert http (
+    msg:"HTTP Test";
+    http_header;
+    content:"User-Agent:",fast_pattern,nocase;
+    sid:1000005;
+)
 alert icmp any any -> any any (msg:"ICMP Test"; sid:1000001;)
 alert udp any any -> any any (msg:"UDP Test"; sid:1000002;)
 alert tcp any any -> any any (msg:"TCP Test"; sid:1000003;)
-alert http any any -> any any (msg:"HTTP Test"; sid:1000004; content:"GET"; http_method;)
+
+

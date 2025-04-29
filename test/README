@@ -1,7 +1,9 @@
 
 Setup test:
+
 On gateway:    
- tcpdump -i eth1 'icmp or (tcp and dst port 8080) or (udp and dst port 53)' and src host 192.168.101.10 and dst host 192.168.201.11 -w /tmp/test.pcap
+ tcpdump -i eth1 host 192.168.201.11 -w /tmp/test.pcap
+(Make sure to capture traffic in both directions so snort can detect streams properly)
 
 On attacker:
 ┌──(kali㉿kali)-[~]

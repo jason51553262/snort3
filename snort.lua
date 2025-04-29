@@ -172,3 +172,5 @@ end
 ---------------------------------------------------------------------------
 
 search_engine = { search_method = "hyperscan" }
+
+include 'trace.lua'

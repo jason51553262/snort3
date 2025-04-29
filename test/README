@@ -1,0 +1,48 @@
+
+Setup test:
+On gateway:    
+ tcpdump -i eth1 'icmp or (tcp and dst port 8080) or (udp and dst port 53)' and src host 192.168.101.10 and dst host 192.168.201.11 -w /tmp/test.pcap
+
+On attacker:
+┌──(kali㉿kali)-[~]
+└─$ ping 192.168.201.11 -c1
+PING 192.168.201.11 (192.168.201.11) 56(84) bytes of data.
+64 bytes from 192.168.201.11: icmp_seq=1 ttl=63 time=0.310 ms
+
+--- 192.168.201.11 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 0.310/0.310/0.310/0.000 ms
+
+┌──(kali㉿kali)-[~]
+└─$ curl http://192.168.201.11:8080
+{"timestamp":"2025-04-29T01:47:45.498+00:00","status":400,"error":"Bad Request","path":"/"}
+
+┌──(kali㉿kali)-[~]
+└─$ dig @192.168.201.11 8.8.8.8
+;; communications error to 192.168.201.11#53: connection refused
+;; communications error to 192.168.201.11#53: connection refused
+;; communications error to 192.168.201.11#53: connection refused
+
+; <<>> DiG 9.20.4-4-Debian <<>> @192.168.201.11 8.8.8.8
+; (1 server found)
+;; global options: +cmd
+;; no servers could be reached
+
+Combined:
+ping 192.168.201.11 -c1; curl http://192.168.201.11:8080; dig @192.168.201.11 8.8.8.8
+
+Verify:
+root@inspector-525400a87a03:/snort/etc/rules# tcpdump -r /tmp/test.pcap
+reading from file /tmp/test.pcap, link-type EN10MB (Ethernet), snapshot length 262144
+02:07:07.448912 IP kali-01 > 192.168.201.11: ICMP echo request, id 18, seq 1, length 64
+02:07:07.454294 IP kali-01.47178 > 192.168.201.11.http-alt: Flags [S], seq 3069910258, win 64240, options [mss 1460,sackOK,TS val 2963781009 ecr 0,nop,wscale 7], length 0
+02:07:07.454476 IP kali-01.47178 > 192.168.201.11.http-alt: Flags [.], ack 1822503730, win 502, options [nop,nop,TS val 2963781009 ecr 625827378], length 0
+02:07:07.454517 IP kali-01.47178 > 192.168.201.11.http-alt: Flags [P.], seq 0:83, ack 1, win 502, options [nop,nop,TS val 2963781009 ecr 625827378], length 83: HTTP: GET / HTTP/1.1
+02:07:07.456527 IP kali-01.47178 > 192.168.201.11.http-alt: Flags [.], ack 231, win 501, options [nop,nop,TS val 2963781011 ecr 625827380], length 0
+02:07:07.456533 IP kali-01.47178 > 192.168.201.11.http-alt: Flags [.], ack 236, win 501, options [nop,nop,TS val 2963781011 ecr 625827380], length 0
+02:07:07.456674 IP kali-01.47178 > 192.168.201.11.http-alt: Flags [F.], seq 83, ack 236, win 501, options [nop,nop,TS val 2963781011 ecr 625827380], length 0
+02:07:07.456693 IP kali-01.47178 > 192.168.201.11.http-alt: Flags [.], ack 237, win 501, options [nop,nop,TS val 2963781011 ecr 625827380], length 0
+02:07:07.464529 IP kali-01.37598 > 192.168.201.11.domain: 55753+ [1au] A? 8.8.8.8. (48)
+02:07:07.464831 IP kali-01.40956 > 192.168.201.11.domain: 55753+ [1au] A? 8.8.8.8. (48)
+02:07:07.465047 IP kali-01.56152 > 192.168.201.11.domain: 55753+ [1au] A? 8.8.8.8. (48)
+

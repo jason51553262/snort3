@@ -1,0 +1,4 @@
+alert icmp any any -> any any (msg:"ICMP Test"; sid:1000001;)
+alert udp any any -> any any (msg:"UDP Test"; sid:1000002;)
+alert tcp any any -> any any (msg:"TCP Test"; sid:1000003;)
+alert http any any -> any any (msg:"HTTP Test"; sid:1000004; content:"GET"; http_method;)

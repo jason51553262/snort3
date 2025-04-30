@@ -113,7 +113,7 @@ RUN wget -nv https://github.com/snort3/snort3/archive/refs/tags/${SNORT_VERSION}
     cd snort3-${SNORT_VERSION} && \
     ./configure_cmake.sh --help; \
     ./configure_cmake.sh --prefix=/usr --enable-tcmalloc --disable-docs \
-        --enable-debug-msgs --enable-reload && \
+        --enable-debug-msgs && \
     cd build && \
     make -j$(nproc) && \
     make install && \
